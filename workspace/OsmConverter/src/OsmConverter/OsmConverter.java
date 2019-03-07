@@ -13,14 +13,14 @@ import java.util.Date;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import mj82.Converter.CheckNameLength;
-import mj82.Converter.NodeSAXHandler;
-import mj82.Converter.Param;
-import mj82.Converter.RelationSAXHandler;
-import mj82.Converter.RndAccessFile;
-import mj82.Converter.WaysSAXHandler;
-import mj82.Tree.RTreeCreator;
-import mj82.Triangulation.Triangulator;
+import com.mikhail.mj82.Converter.CheckNameLength;
+import com.mikhail.mj82.Converter.NodeSAXHandler;
+import com.mikhail.mj82.Converter.Param;
+import com.mikhail.mj82.Converter.RelationSAXHandler;
+import com.mikhail.mj82.Converter.RndAccessFile;
+import com.mikhail.mj82.Converter.WaysSAXHandler;
+import com.mikhail.mj82.Tree.RTreeCreator;
+import com.mikhail.mj82.Triangulation.Triangulator;
 
 /**
  * Класс является входной точкой приложения. В нем выбирают карту, которую необходимо 
@@ -66,7 +66,7 @@ public class OsmConverter {
 		    CheckNameLength check; // Ищем самую длинную надпись на карте
 		    NodeSAXHandler node_handler; // Парсит точки
 		    WaysSAXHandler way_handler; // Парсит линии
-		    RelationSAXHandler relation_handler; // Парсит отношения
+		    RelationSAXHandler relation_handler; // Парсит отношения*/
 		    RTreeCreator creator; // Создает поисковые деревья
 		    Triangulator triangulator; // Триангулирует полигоны карты		
 		    
@@ -127,7 +127,8 @@ public class OsmConverter {
 			printLog("Максимальный идентификатор точки после группировки линий: " + Param.maxNodeId);
 			printLog("Количество точек после группировки точек в линии: " + Param.seek_nodes.size());
 			printLog("Время группировки точек в линии: " + (timeEnd - timeStart) + " ms\r\n");
-//			fwf.close();		
+//			fwf.close();
+			
 ////////////// Парсим отношения и вносим изменения в свойства линий
 			relation_handler = new RelationSAXHandler();
 			
@@ -213,8 +214,8 @@ public class OsmConverter {
 			printLog("Создаем поисковые деревья карты ... ");
 			
 			creator = new RTreeCreator();
-//			creator.makeRTree();
-			creator.makeRTree(true); // Используем при больших файлах osm
+			creator.makeRTree();
+//			creator.makeRTree(true); // Используем при больших файлах osm
 			
 			endTime = new Date();
 			timeEnd = endTime.getTime();
