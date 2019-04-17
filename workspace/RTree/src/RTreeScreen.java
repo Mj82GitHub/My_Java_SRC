@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -30,7 +31,7 @@ public class RTreeScreen extends JFrame {
 	
 	private ArrayList<GPSObject> points;
 	
-	static public int num = 286;
+	static public int num = 555;
 	
 	// Конструктор
 	public RTreeScreen() {
@@ -136,6 +137,8 @@ public class RTreeScreen extends JFrame {
 				  e.getY() + 200);
 			pp.repaint();
 			pp.find();
+			pp.delete();
+			pp.nodesSize();
 		}
 
 		@Override
@@ -166,7 +169,10 @@ class PaintPanel extends JPanel {
 	private ArrayList<GPSObject> points;
 	private RTree tree;
 	ArrayList<Integer> gps;
+	HashMap<Integer, GPSObject> objs;
 	JRect r;
+	int nodeSize = 0;
+	int objSize = 0;
 	
 	public PaintPanel(Dimension size, ArrayList<GPSObject> points) {
 		this.setOpaque(true);
@@ -174,10 +180,18 @@ class PaintPanel extends JPanel {
 		this.points = points;
 		tree = new RTree();
 		
+		// Соответствие идентификаторов объектов самим объектам
+		objs = new HashMap<>();
+		
 		System.out.println("Start creating tree ...");		
 		for(int i = 0; i < points.size(); i++) {
 			tree.insertObject(points.get(i));
+			objs.put(points.get(i).getId(), points.get(i));
 		}
+		
+		nodeSize = tree.getNodes().length;
+		objectsSize();
+		
 		System.out.println("Stop creating tree.");
 		
 		System.out.println("Start finding ...");
@@ -186,9 +200,7 @@ class PaintPanel extends JPanel {
 		System.out.println("Stop finding .");
 		
 		// поиск
-	    tree.findObjectsInArea(r, gps);
-	    
-	    
+//	    tree.findObjectsInArea(r, gps);	    
 	}
 	
 	public JRect getRect() {
@@ -196,8 +208,38 @@ class PaintPanel extends JPanel {
 	}
 	
 	public void find() {
+		gps.clear();
 		// поиск
 		tree.findObjectsInArea(r, gps);
+	}
+	
+	public void find(JRect rr) {
+		gps.clear();
+		// поиск
+		tree.findObjectsInArea(rr, gps);
+	}
+	
+	public void delete() {
+		// удаление найденых точек
+		for (int i = 0; i < gps.size(); i++) {
+			tree.deleteObject(objs.get(gps.get(i)));
+		}
+		
+		this.repaint();
+	}
+	
+	// количество узлов дерева
+	public void nodesSize() {
+		nodeSize = tree.getNodes().length;
+		objectsSize();
+	}
+	
+	public void objectsSize() {
+		objSize = 0;
+		
+		for(RTNode node : tree.getNodes()) {
+			objSize += node.getObjects().length;
+		}
 	}
 		
 	public void paintComponent(Graphics g) {
@@ -271,8 +313,11 @@ class PaintPanel extends JPanel {
 			}
 		}
 		
+		g2.setColor(Color.BLACK);
 		g2.setFont(new Font(null, 0, 20));
 		g2.drawString("R*-Tree sort.", 20, 30);
 		g2.drawString("Количество объектов = " + RTreeScreen.num, 300, 30);
+		g2.drawString("Количество узлов = " + nodeSize + "     Кол-во объектов = " + objSize, 700, 30);
+		
 	}
 }

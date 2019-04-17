@@ -902,6 +902,32 @@ public class RTree {
 		return nodeId;
 	}
 
+	// метод поиска обьектов пересекающихся с областью mbr для удаления
+	public void findObjectsInAreaForDelete(JRect mbr, int nodeId, ArrayList<RTNode> obj) {		
+		if(isRoot(nodeId)) {
+			obj.clear();
+		}
+		
+		if(!nodes[nodeId].isLeaf()) {
+			for(int i = 0; i < nodes[nodeId].getChildren().length; i++) {
+				if(nodes[nodes[nodeId].getChild(i)].isIntersected(mbr)) {
+					findObjectsInAreaForDelete(mbr, nodes[nodeId].getChild(i), obj);
+				}
+			}
+		} else {
+			for(int i = 0; i < nodes[nodeId].getObjects().length; i++) {
+				if(nodes[nodeId].isIntersected(mbr, nodes[nodeId].getObject(i).getMbr())) {
+					obj.add(nodes[nodeId]);
+				}
+			}
+		}
+	}
+	
+	// метод для поиска обьектов попадающих в область mbr. Возвращает массив содержащий индексы на фигуры 
+	// в массиве фигур(обьектов. т.е. домов, рек итд)
+	public void findObjectsInAreaForDelete(JRect mbr, ArrayList<RTNode> obj) {
+		findObjectsInAreaForDelete(mbr, root, obj);
+	}
 	
 	// метод поиска обьектов пересекающихся с областью mbr
 	public void findObjectsInArea(JRect mbr, int nodeId, ArrayList<Integer> obj) {		
@@ -944,5 +970,69 @@ public class RTree {
 		} else { // если количество обьектов в узле достигло максимально допустимое
 			splitNodeRStarObj(nodeId, obj); // делим узел
 		}
+	}
+	
+	// метод для удаления объекта из дерева
+	// при удачном удалении объекта возвращает объект
+	public GPSObject deleteObject(GPSObject obj) {
+		GPSObject result = null; // Удаленный объект
+		
+		ArrayList<Integer> ids = new ArrayList<>(1); // Идентификатор объекта
+		ArrayList<RTNode> obj_node = new ArrayList<>(1); // Узел, в котором есть объект
+		
+		// проверяем есть ли этот объект в дереве
+		findObjectsInArea(obj.getMbr(), ids);
+		
+		if (ids.size() > 0 && ids.get(0) == obj.getId()) {
+			// ищем узел, в котором находится объект
+			findObjectsInAreaForDelete(obj.getMbr(), obj_node);			
+			RTNode node = obj_node.get(0);
+			
+			// Если узел не пустой
+			if (node.getObjects().length > 0) {
+				GPSObject[] objs = node.getObjects();
+				ArrayList<GPSObject> tmp = new ArrayList<>();
+				
+				// ищем объект
+				for (int i = 0; i < objs.length; i++) {
+					if (objs[i].compareObject(obj)) {
+						result = objs[i];
+					} else {
+						tmp.add(objs[i]);
+					}
+				}
+				
+				// Если в узле остались еще объекты
+				if (tmp.size() > 0) {
+					// Ссоздаеи новый массив объектов для узла
+					GPSObject[] new_objs = new GPSObject[tmp.size()];
+					tmp.toArray(new_objs);
+					
+					// Вставляем в узел новый массив объектов
+					node.setNewObjects(new_objs);
+				} else { // если в узле был только удаляемый объект
+					if (node.getParent() >= 0) { // Не корень							
+						for(int i = 0; i < nodes.length; i++) {
+							// Ищем узел с удаляемым объектом
+							if (nodes[i].getObjects().length == 1) { 
+								if (nodes[i].getObjects()[0].getId() == obj.getId()) {
+									node.clearObjects(); // очищаем массив объектов
+								} 	
+							}
+						}
+					} else {
+						node.clearObjects(); // очищаем массив объектов
+					}					
+				}			
+			}			
+		}
+		
+		if (nodes.length == 1) {
+			if (nodes[0].getParent() < 0)
+				if (!nodes[0].isLeaf())
+					nodes[0].setLeaf(true);
+		}
+		
+		return result;			
 	}
 }

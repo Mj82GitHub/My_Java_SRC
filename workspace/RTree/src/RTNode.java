@@ -150,6 +150,11 @@ public class RTNode {
 		}
 	}
 	
+	// заменяет массив объектов новым массивом
+	public void setNewObjects(GPSObject[] objs) {
+		objects = objs;
+	}
+	
 	// возвращает индекс в массиве узлов дерева, указывающий на узел-родитель
 	public int getParent() {
 		return parent;

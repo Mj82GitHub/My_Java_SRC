@@ -13,14 +13,14 @@ import java.util.Date;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.mikhail.mj82.Converter.CheckNameLength;
-import com.mikhail.mj82.Converter.NodeSAXHandler;
-import com.mikhail.mj82.Converter.Param;
-import com.mikhail.mj82.Converter.RelationSAXHandler;
-import com.mikhail.mj82.Converter.RndAccessFile;
-import com.mikhail.mj82.Converter.WaysSAXHandler;
-import com.mikhail.mj82.Tree.RTreeCreator;
-import com.mikhail.mj82.Triangulation.Triangulator;
+import com.mikhail.mj82.nvg.Converter.CheckNameLength;
+import com.mikhail.mj82.nvg.Converter.NodeSAXHandler;
+import com.mikhail.mj82.nvg.Converter.Param;
+import com.mikhail.mj82.nvg.Converter.RelationSAXHandler;
+import com.mikhail.mj82.nvg.Converter.RndAccessFile;
+import com.mikhail.mj82.nvg.Converter.WaysSAXHandler;
+import com.mikhail.mj82.nvg.Tree.RTreeCreator;
+import com.mikhail.mj82.nvg.Triangulation.Triangulator;
 
 /**
  * Класс является входной точкой приложения. В нем выбирают карту, которую необходимо 
@@ -205,7 +205,7 @@ public class OsmConverter {
 			
 			printLog("Количество точек после триангуляции полигонов: " + Param.newIndex);
 			printLog("Количество точек после триангуляции больше на: " + (Param.newIndex - Param.seek_nodes.size()));
-			printLog("Время триангуляции полигонов карты: " + (timeEnd - timeStart) + " ms\r\n");		
+			printLog("Время триангуляции полигонов карты: " + (timeEnd - timeStart) + " ms\r\n");
 						
 ////////////// Создаем поисковое дерево карты
 			startTime = new Date();
@@ -221,11 +221,10 @@ public class OsmConverter {
 			timeEnd = endTime.getTime();
 			
 			printLog("Время создания поисковых деревьев карты: " + (timeEnd - timeStart) + " ms\r\n");
-			
-////////////// Создаем контрольную сумму
+
+//////////////Создаем контрольную сумму
 			RndAccessFile my_raf = new RndAccessFile();
-			my_raf.createCRC32();
-			
+			my_raf.createCRC32(true);
 //////////////			
 			printLog("------------------------------");
 			printLog("Первоначальный размер файла(байты): "+ file.length());

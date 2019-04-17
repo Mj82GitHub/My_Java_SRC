@@ -38,4 +38,12 @@ public class GPSObject {
 	public void setPoint(Point xy) {
 		this.xy = xy;
 	}
+	
+	public boolean compareObject(GPSObject obj) {
+		return (id == obj.getId() && 
+				mbr.left == obj.getMbr().left &&
+				mbr.top == obj.getMbr().top &&
+				mbr.right == obj.getMbr().right &&
+				mbr.bottom == obj.getMbr().bottom);
+	}
 }
