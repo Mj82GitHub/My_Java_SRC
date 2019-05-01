@@ -4,7 +4,11 @@
 
 package com.mikhail.mj82.nvg.Converter;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +18,7 @@ import java.util.zip.CRC32;
 
 import com.mikhail.mj82.nvg.Geom.JPolygon;
 import com.mikhail.mj82.nvg.Geom.JRect;
+import com.mikhail.mj82.nvg.Tree.RTrees;
 
 import OsmConverter.OsmConverter;
 
@@ -43,12 +48,12 @@ public class RndAccessFile {
 			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
 			raf.setLength(0);
 			
-			Param.dirIndexes.mkdirs();
+/*			Param.dirIndexes.mkdirs();
 			i_raf = new RandomAccessFile(Param.tree_path, "rw");
-			i_raf.setLength(0);
+			i_raf.setLength(0);*/
 			
 			setFormats();
-			setMapNameInIndexFile();
+//			setMapNameInIndexFile();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -82,8 +87,8 @@ public class RndAccessFile {
 			raf.write(Param.dnvg_format);
 			
 			// В index файле
-			i_raf.seek(Param.start_seek);
-			i_raf.write(Param.index_format);
+//			i_raf.seek(Param.start_seek);
+//			i_raf.write(Param.index_format);
 			
 			// Бронируем место для контрольной суммы
 			// В map.hnvg файле
@@ -95,8 +100,8 @@ public class RndAccessFile {
 			raf.writeLong(0);
 			
 			// В index файле
-			i_raf.seek(Param.crc32_seek);
-			i_raf.writeLong(0);
+//			i_raf.seek(Param.crc32_seek);
+//			i_raf.writeLong(0);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -187,6 +192,9 @@ public class RndAccessFile {
 			seek = Param.maxLon_seek;			
 			raf.seek(seek);
 			raf.writeDouble(maxLon);
+			
+			// Бронируем место под максимальный идентификатор точки карты
+			setMaxId(0, raf);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -196,6 +204,45 @@ public class RndAccessFile {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	/**
+	 * Записывает в файл значение максимального идентификатора точки.
+	 * 
+	 * @param id максимальный идентификатор точки
+	 * @param raf объект для доступа к файлу
+	 */
+	public void setMaxId(long id) {
+		try {
+			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
+			
+			raf.seek(Param.maxId_seek);
+			raf.writeLong(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(raf != null)
+					raf.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Записывает в файл значение максимального идентификатора точки.
+	 * 
+	 * @param id максимальный идентификатор точки
+	 * @param raf объект для доступа к файлу
+	 */
+	public void setMaxId(long id, RandomAccessFile raf) {
+		try {
+			raf.seek(Param.maxId_seek);
+			raf.writeLong(id);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -667,7 +714,9 @@ public class RndAccessFile {
 										///
 					continue;
 				}
-																
+				if (tmp_seek == 6111618) {
+					int y = 0;
+				}
 				Param.newIndex++;
 //				c++;
 				// Сохраняем идентификаторы в новом списке точек в линии
@@ -1906,15 +1955,31 @@ public class RndAccessFile {
 		}
 	}
 	
-	public void deleteAttrsAfterTriangulation() {
-		OsmConverter.printLog("Количество атрибутов до удаления: " + Param.attrs.size());
-		OsmConverter.printLog("Количество атрибутов для удаления: " + Param.delete_attrs.size());
+	/**
+	 * Удаляет физически атрибуты точек и точки, оставшиеся не задействоваными после
+	 * триангуляции полигонов.
+	 * 
+	 * @return TRUE, если были удалены точки, иначе - FALSE
+	 */
+	public void deleteAttrsAndNodesAfterTriangulation() {		
+		OsmConverter.printLog("   Количество точек до удаления: " + 
+	                           (Param.new_seek_nodes.size() + Param.delete_nodes.size()));
+		OsmConverter.printLog("   Количество точек для удаления: " + Param.delete_nodes.size());
+				
+		// Физическое удаление точек карты
+		deleteNodes();
+		
+		OsmConverter.printLog("   Точки удалены: " + Param.delete_nodes.size());
+		OsmConverter.printLog("   Количество точек после удаления: " + Param.new_seek_nodes.size());
+		
+		OsmConverter.printLog("   Количество атрибутов до удаления: " + Param.attrs.size());
+		OsmConverter.printLog("   Количество атрибутов для удаления: " + Param.delete_attrs.size());
 		
 		// Физическое удаление атрибутов точек карты
 		deleteAttrs();
 		
-		OsmConverter.printLog("Атрибуты удалены: " + Param.delete_attrs.size());
-		OsmConverter.printLog("Количество атрибутов после удаления: " + Param.attrs.size());
+		OsmConverter.printLog("   Атрибуты удалены: " + Param.delete_attrs.size());
+		OsmConverter.printLog("   Количество атрибутов после удаления: " + Param.attrs.size());
 	}
 	
 	/**
@@ -2163,8 +2228,13 @@ public class RndAccessFile {
 			raf.writeByte(boundary);
 			
 			// Обновляем ссылку на точку в списке
-			Param.seek_nodes.remove(id);
-			Param.seek_nodes.put(id, myselfSeek);
+			if(Param.seekChanged) {
+				Param.new_seek_nodes.remove(id);
+				Param.new_seek_nodes.put(id, myselfSeek);
+			} else {
+				Param.seek_nodes.remove(id);
+				Param.seek_nodes.put(id, myselfSeek);
+			}
 						
 			// Перезаписываем файл
 			if(raf != null)
@@ -2179,8 +2249,13 @@ public class RndAccessFile {
 				// Обновляем ссылки точек в линиях
 				if(isFirstInLine) {
 					// Обновляем ссылку на линию в списке
-					Param.seek_ways.remove(id);
-					Param.seek_ways.put(id, myselfSeek);				
+					if(Param.seekChanged) {
+						Param.new_seek_only_ways.remove(id);
+						Param.new_seek_only_ways.put(id, myselfSeek);	
+					} else {
+						Param.seek_ways.remove(id);
+						Param.seek_ways.put(id, myselfSeek);	
+					}								
 				} else {
 					if(firstInLine > 0) {
 						raf.seek(firstInLine + Param.id_seek); // Идентификатор первой точки в линии
@@ -2194,7 +2269,12 @@ public class RndAccessFile {
 							if(nodes_ids.size() > 1) {
 								if(nodes_ids.get(i) == id) {
 									if(i > 0) {
-										raf.seek(Param.seek_nodes.get(nodes_ids.get(i - 1)) + Param.next_seek);
+										if(Param.seekChanged) {
+											raf.seek(Param.new_seek_nodes.get(nodes_ids.get(i - 1)) + Param.next_seek);
+										} else {
+											raf.seek(Param.seek_nodes.get(nodes_ids.get(i - 1)) + Param.next_seek);
+										}	
+										
 										raf.writeLong(src_seek);
 									}
 								}
@@ -2204,8 +2284,13 @@ public class RndAccessFile {
 				}
 			} else { // Если это отдельная точка
 				// Обновляем ссылку на точку в списке
-				Param.seek_nodes.remove(id);
-				Param.seek_nodes.put(id, myselfSeek);
+				if(Param.seekChanged) {
+					Param.new_seek_nodes.remove(id);
+					Param.new_seek_nodes.put(id, myselfSeek);
+				} else {
+					Param.seek_nodes.remove(id);
+					Param.seek_nodes.put(id, myselfSeek);
+				}		
 				
 //				Param.seek_nodes_without_ways.remove(id);
 //				Param.seek_nodes_without_ways.put(id, myselfSeek);
@@ -2280,11 +2365,17 @@ public class RndAccessFile {
 	 */
 	
 	private void deleteNodeFromList(long node_id, RandomAccessFile raf) {
+		long seek = 0;
+		
 		// Записываем признак удаления в свойства точки
 		try {
 			h_raf = new RandomAccessFile(Param.hnvg_file_path, "rw");
 			
-			long seek = Param.seek_nodes.get(node_id);
+			if(Param.seekChanged) {
+				seek = Param.new_seek_nodes.get(node_id);
+			} else {
+				seek = Param.seek_nodes.get(node_id);
+			}
 			
 			raf.seek(seek + Param.attr_seek);
 			long attrSeek = raf.readLong();
@@ -2315,6 +2406,56 @@ public class RndAccessFile {
 		Param.delete_nodes.put(node_id, Param.seek_nodes.get(node_id));
 		Param.seek_nodes.remove(node_id);
 		Param.seek_nodes_used.remove(node_id);
+	}
+	
+	/**
+	 * Удаляет точку из списка всех точек файла.
+	 * 
+	 * @param node_id идентификатор удаляемой точки
+	 * @param raf объект для доступа к файлу
+	 * @param h_raf объект для доступа к файлу
+	 */
+	
+	private void deleteNodeFromList(long node_id, RandomAccessFile raf, RandomAccessFile h_raf) {
+		long seek = 0;
+		
+		// Записываем признак удаления в свойства точки
+		try {			
+			if(Param.seekChanged) {
+				seek = Param.new_seek_nodes.get(node_id);
+			} else {
+				seek = Param.seek_nodes.get(node_id);
+			}
+			
+			raf.seek(seek + Param.attr_seek);
+			long attrSeek = raf.readLong();
+			
+			h_raf.seek(attrSeek + Param.firsPointInWay_seek);
+			long firstPointInWay = h_raf.readLong();
+			
+			if(seek == firstPointInWay && attrSeek > 0) {
+				int index = Param.delete_attrs.indexOf(attrSeek);
+				
+				if(index == -1)
+					Param.delete_attrs.add(attrSeek);
+			}
+			
+			raf.seek(seek + Param.delete_seek);
+			raf.writeByte(Param.delete);		
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		
+		if(Param.seekChanged) {
+			Param.delete_nodes.put(node_id, Param.new_seek_nodes.get(node_id));
+			
+			Param.new_seek_nodes.remove(node_id);
+		} else {
+			Param.delete_nodes.put(node_id, Param.seek_nodes.get(node_id));
+			
+			Param.seek_nodes.remove(node_id);
+			Param.seek_nodes_used.remove(node_id);
+		}		
 	}
 	
 	/**
@@ -2631,7 +2772,7 @@ public class RndAccessFile {
 	
 	/**
 	 * Возвращает список смещений всех точек элемента карты.
-	 * @param seekс мещение первой точки элемента
+	 * @param seek смещение первой точки элемента
 	 * @return массив смещений всех точек элемента карты
 	 */
 	public long [] getSeeksForTreeFromFile(long seek) {
@@ -3844,7 +3985,9 @@ public class RndAccessFile {
 	public long createNewNode(long seek) {		
 		long myselfSeek = -1; // Собственное смещение новой точки
 		Param.maxNodeId++; // Новый идентификатор точки
-		
+		if (Param.newIndex == 4569057068l) {
+			int y = 0;
+		}
 		try {
 			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
 			
@@ -3995,7 +4138,9 @@ public class RndAccessFile {
 	
 	public long createNewNodeForWay(long seek) {
 		long myselfSeek = -1; // Собственное смещение новой точки
-		
+		if (Param.newIndex == 4569057068l) {
+			int y = 0;
+		}
 		try {
 			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
 			
@@ -4082,7 +4227,9 @@ public class RndAccessFile {
 	
 	public long createNewNodeForWay(long seek, RandomAccessFile raf) {
 		long myselfSeek = -1; // Собственное смещение новой точки
-		
+		if (Param.newIndex == 4569057068l) {
+			int y = 0;
+		}
 		try {			
 			myselfSeek = raf.length();
 			
@@ -4148,6 +4295,26 @@ public class RndAccessFile {
 		} 
 		
 		return myselfSeek;
+	}
+	
+	/**
+	 * Возвращает идентификатор элемента карты.
+	 * 
+	 * @param seek смещение элемента карты
+	 * @param raf объект для доступа к файлу
+	 * @return идентификатор элемента карты
+	 */
+	public long getId(long seek, RandomAccessFile raf) {
+		long id = -1;
+		
+		try {			
+			raf.seek(seek + Param.id_seek);
+			id = raf.readLong();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+		
+		return id;
 	}
 	
 	/**
@@ -4451,7 +4618,9 @@ public class RndAccessFile {
 	public long createNewWay(double[] coords, long seek, RandomAccessFile raf) {
 		long first = -1; // Собственное смещение первой точки новой линии
 		ArrayList<Long> new_seek_nodes = new ArrayList<>(); // Новые смещения точек
-		
+		if (Param.newIndex == 4569057068l) {
+			int y = 0;
+		}
 		try {			
 			// Создаем новую линию и заполняем данными	
 			long newWayId = -1;
@@ -4558,7 +4727,9 @@ public class RndAccessFile {
 	public long createNewWay(ArrayList<Long> node_ids) {		
 		long myselfSeek = -1; // Собственное смещение первой точки новой линии
 		ArrayList<Long> new_seek_nodes = new ArrayList<>(); // Новые смещения точек
-		
+		if (Param.newIndex == 4569057068l) {
+			int y = 0;
+		}
 		try {
 			h_raf = new RandomAccessFile(Param.hnvg_file_path, "rw");
 			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
@@ -4682,7 +4853,7 @@ public class RndAccessFile {
 	 * @return смещение первой точки полигона (первой точки первого треугольника) либо 0
 	 */
 	
-	public long createNewTrianglePoligon(double [][] triangles, ArrayList<Long > allSeeks, 
+	public long createNewTrianglePoligon(double [][] triangles, ArrayList<Long> allSeeks, 
 			                             double [] bounderyCoords, long firstPointInWay) {
 		long firstSeek = 0;
 		
@@ -4691,7 +4862,25 @@ public class RndAccessFile {
 				h_raf = new RandomAccessFile(Param.hnvg_file_path, "rw");
 				raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
 				
-				// Копируем некоторые данные из из первой точки внешнего полигона 
+				// Если точек в треугольниках меньше, чем в исходном полигоне
+				if ((triangles.length * 3) < allSeeks.size()) {
+					ArrayList<Long> tmp = new ArrayList<>();
+					
+					for (int i = 0; i < (triangles.length * 3); i++)						
+						tmp.add(allSeeks.get(i));
+					
+					// Подготавливаем к удалению оставшиеся лишние точки
+					for (int i = (triangles.length * 3); i < allSeeks.size(); i++)
+						deleteNodeFromList(getId(allSeeks.get(i), raf), raf, h_raf);
+					
+					// В последней точке обнуляем ссылку на следующую точку
+					setNextSeek(tmp.get(tmp.size() - 1), 0, raf);
+					
+					allSeeks = null;
+					allSeeks = tmp;
+				}
+				
+				// Копируем некоторые данные из первой точки внешнего полигона 
 				// до его триангуляции
 				raf.seek(firstPointInWay + Param.attr_seek);
 				long attrSeek = raf.readLong();				
@@ -5056,9 +5245,20 @@ public class RndAccessFile {
 							 last_first = compareCoordsNodes(nodes_ids_way_tmp.get(nodes_ids_way_tmp.size() - 1),
                                                              nodes_ids_way.get(0), raf);
 							 
-							 if(first_last || last_first) {
+							 if(first_last) {
 								 // Вставляем линию в отсортированный массив
 								 tmp_ways_ids.add(0, nodes_ids_way.get(0));
+								 size_tmp_ways = tmp_ways_ids.size();
+								 
+								 ways_ids.remove(ways_ids.get(i));
+								 
+								 first_way_tmp = true;
+								 break;
+							 }
+							 
+							 if (last_first) {
+								// Вставляем линию в отсортированный массив
+								 tmp_ways_ids.add(nodes_ids_way.get(0));
 								 size_tmp_ways = tmp_ways_ids.size();
 								 
 								 ways_ids.remove(ways_ids.get(i));
@@ -5381,7 +5581,9 @@ public class RndAccessFile {
 				// Перебираем линии
 				while(iterator_ways.hasNext()) {
 					long tmp_seek = iterator_ways.next();
-					
+					if (tmp_seek == 6111618) {
+						int y = 0;
+					}
 					raf.seek(tmp_seek);
 					type = raf.readByte();
 					
@@ -5537,18 +5739,11 @@ public class RndAccessFile {
 			// Размер файлов		
 			String strDnvgSize = Long.toHexString(raf.length());						
 			String strHnvgSize = Long.toHexString(h_raf.length());
+			String strIndexSize = Long.toHexString(i_raf.length());
 			
-			String finalStr = "";
-			
-			if (!isIndexFile) {
-				String strIndexSize = Long.toHexString(i_raf.length());
-				
-				// Складываем все строковые переменнве и получаем массив в байтах
-				finalStr = mapName.concat(strDnvgSize).concat(strHnvgSize).concat(strIndexSize);
-			} else 
-				// Складываем все строковые переменнве и получаем массив в байтах
-				finalStr = mapName.concat(strDnvgSize).concat(strHnvgSize);
-				
+			// Складываем все строковые переменнве и получаем массив в байтах
+			String finalStr = mapName.concat(strDnvgSize).concat(strHnvgSize).concat(strIndexSize);
+							
 			byte [] word = finalStr.getBytes();
 			
 			CRC32 crc32 = new CRC32();
@@ -5566,6 +5761,30 @@ public class RndAccessFile {
 			if (!isIndexFile) {
 				i_raf.seek(Param.crc32_seek);
 				i_raf.writeLong(result);
+			} else {
+				 try {
+					 // Десериализация
+					 FileInputStream file_in = new FileInputStream(Param.tree_path);
+					 ObjectInputStream object_in = new ObjectInputStream(file_in);
+					 
+					 RTrees trees = (RTrees) object_in.readObject();
+					 trees.setCRC(result);
+					 
+					 file_in.close();
+					 object_in.close();
+					 
+					 // Серриализация
+					 FileOutputStream file_out = new FileOutputStream(Param.tree_path);
+					 ObjectOutputStream	object_out = new ObjectOutputStream(file_out);
+					
+					 object_out.writeObject(trees);
+					
+					 object_out.flush();
+					 object_out.close();
+					 file_out.close();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
 			}
 			
 			OsmConverter.printLog("Контрольная сумма " + Long.toHexString(result) + " создана и записана в файлы.");		

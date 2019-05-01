@@ -41,11 +41,11 @@ public class OsmConverter {
 //	private final static String path = "kaliningrad.osm";
 //	private final static String path = "columbia.osm";
 //	private final static String path = "nebug.osm";
-	private final static String path = "newyork.osm";
+//	private final static String path = "newyork.osm";
 //	private final static String path = "RU-YAN.osm";
 //	private final static String path = "RU-KGD.osm";
-//	private final static String path = "rim1.osm";
-//	private final static String path = "braniewo.osm";
+//	private final static String path = "rim.osm";
+	private final static String path = "braniewo.osm";
 //	private final static String path = "map.osm";
 	
 	public static StringBuilder log_str = new StringBuilder(); // Текст для файла Log.txt
@@ -125,7 +125,8 @@ public class OsmConverter {
 			raf.deleteDublicatCoordsNodesInWay();
 			
 			printLog("Максимальный идентификатор точки после группировки линий: " + Param.maxNodeId);
-			printLog("Количество точек после группировки точек в линии: " + Param.seek_nodes.size());
+			printLog("Количество точек после группировки точек в линии: " + 
+			         (Param.seek_nodes.size() + Param.delete_nodes.size()));
 			printLog("Время группировки точек в линии: " + (timeEnd - timeStart) + " ms\r\n");
 //			fwf.close();
 			
@@ -149,9 +150,12 @@ public class OsmConverter {
 			
 ////////////// Добавляем доп. точку в элемент карты типа poligon_line
 			printLog("Добавляем дополнительные точки в тип элемента карты poligon_line ...");
-			printLog("Количество элементов карты с типом poligon_line: " + Param.seek_ways_with_poligon_line_type.size() + "\r\n");
+			printLog("Количество элементов карты с типом poligon_line: " + Param.seek_ways_with_poligon_line_type.size());
 			
 			raf.setPointInPolygonLine();
+			
+			printLog("Количество точек после добавления доп. точек в тип элемента карты poligon_line: " + 
+			          (Param.seek_nodes.size() + Param.delete_nodes.size()) + "\r\n");
 			
 			System.gc(); // Запускаем сборщик мусора
 			
@@ -193,18 +197,23 @@ public class OsmConverter {
 		    startTime = new Date();
 			timeStart = startTime.getTime();
 			
+			long beforeNodes = Param.new_seek_nodes.size(); // Кол-во точек до триангуляции
+			
 			printLog("Идет триангуляция полигонов карты ...");
 			
 			triangulator = new Triangulator();
 			triangulator.makeTriangulation();
 			
-			raf.deleteAttrsAfterTriangulation();
+			printLog("Дополнительные настройки после триангуляции:");
+			raf.deleteAttrsAndNodesAfterTriangulation();
+			printLog("   Запись в файл максимального идентификатора точек карты: " + Param.newIndex);
+			raf.setMaxId(Param.newIndex);
 			
 			endTime = new Date();
 			timeEnd = endTime.getTime();
 			
-			printLog("Количество точек после триангуляции полигонов: " + Param.newIndex);
-			printLog("Количество точек после триангуляции больше на: " + (Param.newIndex - Param.seek_nodes.size()));
+			printLog("Количество точек после триангуляции полигонов: " + Param.new_seek_nodes.size());
+			printLog("Количество точек после триангуляции больше на: " + ( Param.new_seek_nodes.size() - beforeNodes));
 			printLog("Время триангуляции полигонов карты: " + (timeEnd - timeStart) + " ms\r\n");
 						
 ////////////// Создаем поисковое дерево карты
