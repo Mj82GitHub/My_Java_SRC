@@ -151,86 +151,97 @@ public class Mj_Vertex extends Mj_Node {
 		return bp;
 	}
 	
-	public Mj_Vertex split_and_offset_triangle(Mj_Vertex b, boolean outer_CW, Mj_Polygon outer_polygon) {
-		// Заносим bp перед вершиной b
-		Mj_Vertex bp = b.ccw().insert(new Mj_Vertex(new Mj_Point(b.point().x, b.point().y)));
-		// Заносим ap после текущей вершины
-		insert(new Mj_Vertex(new Mj_Point(point().x, point().y)));
-		splice(bp);
-		
-		Mj_Vertex a = this; // Точка внешнего полигона
-		Mj_Vertex ap = (Mj_Vertex) bp.next(); // Точка внешнего полигона после рассечения
-		
-		Mj_Vertex a_prev = (Mj_Vertex) ((Mj_Vertex) b.prev()).prev(); // Перед точкой a
-		Mj_Vertex ap_next = (Mj_Vertex) ((Mj_Vertex) bp.next()).next(); // После точки ap
-		
-		Mj_Vertex b_next = (Mj_Vertex) b.next(); // После точки b
-		Mj_Vertex bp_prev = (Mj_Vertex) bp.prev(); // Перед точкой bp
-		
-		// Длины ребер до и после точек рассечения
-		double l_a = (a_prev.point().subtraction(a.point())).length();
-		double l_b = (b_next.point().subtraction(b.point())).length();
-		double l_ap = (ap_next.point().subtraction(ap.point())).length();
-		double l_bp = (bp_prev.point().subtraction(bp.point())).length();	
-		
+	public Mj_Vertex split_and_offset_triangle(Mj_Vertex b, Mj_Polygon outer_polygon) {
 		// Объект для изменения координат вершин в месте рассечения
 		VertexOffseter vOff = new VertexOffseter();
 		
-		// Сохраняем точки разреза внешнего полигона
-		if(l_a >= l_ap && l_b >= l_bp) {
-			// Сохраняем оригинальные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
+		Mj_Vertex bp = null; // Вершинат получившияся после рассечения и объединения полигонов
+				
+		// Если ближайшая точка на внешнем и внутреннем полигоне одна и таже
+		if (b.point().equalsPoints(outer_polygon.getVertex().point())) {
+			Mj_Vertex a = this; // Точка внешнего полигона
+			a.splice(b);
 			
 			// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
 			vOff.offset(a, b, outer_polygon, Triangulation.delta);
+		} else { // иначе рассекаем
+			// Заносим bp перед вершиной b
+			bp = b.ccw().insert(new Mj_Vertex(new Mj_Point(b.point().x, b.point().y)));
+			// Заносим ap после текущей вершины
+			insert(new Mj_Vertex(new Mj_Point(point().x, point().y)));
+			splice(bp);
 			
-			// Сохраняем измененные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
-		} else if(l_a >= l_ap && l_b < l_bp) {
-			// Сохраняем оригинальные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
+			Mj_Vertex a = this; // Точка внешнего полигона
+			Mj_Vertex ap = (Mj_Vertex) bp.next(); // Точка внешнего полигона после рассечения
 			
-			// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
-			vOff.offset(a, bp, outer_polygon, Triangulation.delta);
+			Mj_Vertex a_prev = (Mj_Vertex) ((Mj_Vertex) b.prev()).prev(); // Перед точкой a
+			Mj_Vertex ap_next = (Mj_Vertex) ((Mj_Vertex) bp.next()).next(); // После точки ap
 			
-			// Сохраняем измененные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
-		} else if(l_a < l_ap && l_b >= l_bp) {
-			// Сохраняем оригинальные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
+			Mj_Vertex b_next = (Mj_Vertex) b.next(); // После точки b
+			Mj_Vertex bp_prev = (Mj_Vertex) bp.prev(); // Перед точкой bp
 			
-			// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
-			vOff.offset(ap, b, outer_polygon, Triangulation.delta);
+			// Длины ребер до и после точек рассечения
+			double l_a = (a_prev.point().subtraction(a.point())).length();
+			double l_b = (b_next.point().subtraction(b.point())).length();
+			double l_ap = (ap_next.point().subtraction(ap.point())).length();
+			double l_bp = (bp_prev.point().subtraction(bp.point())).length();	
 			
-			// Сохраняем измененные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
-		} else if(l_a < l_ap && l_b < l_bp) {
-			// Сохраняем оригинальные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
-			
-			// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
-			vOff.offset(ap, bp, outer_polygon, Triangulation.delta);
-			
-			// Сохраняем измененные точки разреза, чтобы
-			// по ним больше не делали еще один разрез
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
-			Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
-		}
+			// Сохраняем точки разреза внешнего полигона
+			if(l_a >= l_ap && l_b >= l_bp) {
+				// Сохраняем оригинальные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
 				
+				// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
+				vOff.offset(a, b, outer_polygon, Triangulation.delta);
+				
+				// Сохраняем измененные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
+			} else if(l_a >= l_ap && l_b < l_bp) {
+				// Сохраняем оригинальные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
+				
+				// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
+				vOff.offset(a, bp, outer_polygon, Triangulation.delta);
+				
+				// Сохраняем измененные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(a));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
+			} else if(l_a < l_ap && l_b >= l_bp) {
+				// Сохраняем оригинальные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
+				
+				// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
+				vOff.offset(ap, b, outer_polygon, Triangulation.delta);
+				
+				// Сохраняем измененные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(b));
+			} else if(l_a < l_ap && l_b < l_bp) {
+				// Сохраняем оригинальные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
+				
+				// Смещаем координаты вершин в месте рассечения полигона так, чтобы небыло самопересечений
+				vOff.offset(ap, bp, outer_polygon, Triangulation.delta);
+				
+				// Сохраняем измененные точки разреза, чтобы
+				// по ним больше не делали еще один разрез
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(ap));
+				Triangulation.useOuterVertexes.add(new Mj_Vertex(bp));
+			}
+		}	
+		
 		return bp;
 	}
 	

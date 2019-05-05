@@ -211,7 +211,6 @@ public class RndAccessFile {
 	 * Записывает в файл значение максимального идентификатора точки.
 	 * 
 	 * @param id максимальный идентификатор точки
-	 * @param raf объект для доступа к файлу
 	 */
 	public void setMaxId(long id) {
 		try {
@@ -714,7 +713,7 @@ public class RndAccessFile {
 										///
 					continue;
 				}
-				if (tmp_seek == 6111618) {
+				if (tmp_seek == 135771737) {
 					int y = 0;
 				}
 				Param.newIndex++;
@@ -3489,7 +3488,9 @@ public class RndAccessFile {
 	
 	public long createNewEmptyWayFromPoints(long node_id_1, long node_id_2) {
 		long id = -1; // Идентификатор новой линии
-		
+		if (Param.newIndex == 4828315301l) {
+			int y = 0;
+		}
 		try {
 			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
 			ArrayList<Long> tmp_array = new ArrayList<>();
@@ -3529,7 +3530,9 @@ public class RndAccessFile {
 	
 	public long createNewEmptyWay(long way_id_1, long way_id_2) {
 		long id = -1; // Идентификатор новой линии
-		
+		if (Param.newIndex == 4828315301l) {
+			int y = 0;
+		}
 		try {
 			raf = new RandomAccessFile(Param.dnvg_file_path, "rw");
 			
@@ -3985,7 +3988,7 @@ public class RndAccessFile {
 	public long createNewNode(long seek) {		
 		long myselfSeek = -1; // Собственное смещение новой точки
 		Param.maxNodeId++; // Новый идентификатор точки
-		if (Param.newIndex == 4569057068l) {
+		if (Param.newIndex == 4828315301l) {
 			int y = 0;
 		}
 		try {
@@ -4074,7 +4077,9 @@ public class RndAccessFile {
 	public long createNewEmptyNode(RandomAccessFile raf) {		
 		long myselfSeek = -1; // Собственное смещение новой точки
 		Param.newIndex++; // Новый идентификатор точки
-		
+		if (Param.newIndex == 4828315301l) {
+			int y = 0;
+		}
 		try {			
 			myselfSeek = raf.length(); // Новое смещение создаваемой точки элемента
 			
@@ -4138,7 +4143,7 @@ public class RndAccessFile {
 	
 	public long createNewNodeForWay(long seek) {
 		long myselfSeek = -1; // Собственное смещение новой точки
-		if (Param.newIndex == 4569057068l) {
+		if (Param.newIndex == 4828315301l) {
 			int y = 0;
 		}
 		try {
@@ -4227,7 +4232,7 @@ public class RndAccessFile {
 	
 	public long createNewNodeForWay(long seek, RandomAccessFile raf) {
 		long myselfSeek = -1; // Собственное смещение новой точки
-		if (Param.newIndex == 4569057068l) {
+		if (Param.newIndex == 4828315301l) {
 			int y = 0;
 		}
 		try {			
@@ -4618,7 +4623,7 @@ public class RndAccessFile {
 	public long createNewWay(double[] coords, long seek, RandomAccessFile raf) {
 		long first = -1; // Собственное смещение первой точки новой линии
 		ArrayList<Long> new_seek_nodes = new ArrayList<>(); // Новые смещения точек
-		if (Param.newIndex == 4569057068l) {
+		if (Param.newIndex == 4828315301l) {
 			int y = 0;
 		}
 		try {			
@@ -4727,7 +4732,7 @@ public class RndAccessFile {
 	public long createNewWay(ArrayList<Long> node_ids) {		
 		long myselfSeek = -1; // Собственное смещение первой точки новой линии
 		ArrayList<Long> new_seek_nodes = new ArrayList<>(); // Новые смещения точек
-		if (Param.newIndex == 4569057068l) {
+		if (Param.newIndex == 4828315301l) {
 			int y = 0;
 		}
 		try {
@@ -5581,9 +5586,7 @@ public class RndAccessFile {
 				// Перебираем линии
 				while(iterator_ways.hasNext()) {
 					long tmp_seek = iterator_ways.next();
-					if (tmp_seek == 6111618) {
-						int y = 0;
-					}
+					
 					raf.seek(tmp_seek);
 					type = raf.readByte();
 					

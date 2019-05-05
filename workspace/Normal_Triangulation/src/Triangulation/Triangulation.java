@@ -4611,7 +4611,158 @@ private double[][] inners12 = new double[][] {
 	private double[] outer30 = new double[] {1,1, 1,5, 3,5, 5,5, 5,1, 3,1};	
 	private double[][] inners30 = new double[][] {{3,5, 5,5, 5,1, 3,1}};
 	
+	private double[] outer31 = new double[] {1,1, 1,5, 4,5, 4,1};	
+	private double[][] inners31 = new double[][] {{1,2, 1,4, 2,4, 2,2}, {3,4, 4,4, 4,2, 3,2}};
 	
+	private double[] outer32 = new double[] {
+				73.4357232	,
+				71.3883723	,
+				73.219669	,
+				71.3997315	,
+				73.1991214	,
+				71.4061545	,
+				73.193832	,
+				71.4034298	,
+				73.1579421	,
+				71.4005337	,
+				73.1531949	,
+				71.3992949	,
+				73.1504322	,
+				71.3972675	,
+				73.2092841	,
+				71.3798791	,
+				73.2232584	,
+				71.3761071	,
+				73.2394807	,
+				71.37295	,
+				73.2746675	,
+				71.3732349	,
+				73.3433436	,
+				71.3718472	,
+				73.3646341	,
+				71.3714796	,
+				73.395419	,
+				71.3742365	,
+				73.4647568	,
+				71.3728581	,
+				73.4774286	,
+				71.3749274	,
+				73.4735632	,
+				71.3805793	
+
+	};	
+	private double[][] inners32 = new double[][] {
+			{
+					73.4528888	,
+					71.3768782	,
+					73.449724	,
+					71.3787156	,
+					73.4534642	,
+					71.3806448	,
+					73.4620955	,
+					71.3807366	,
+					73.4664111	,
+					71.3811959	,
+					73.4707268	,
+					71.3789912	,
+					73.4698636	,
+					71.37697	,
+					73.4649726	,
+					71.3767863	,
+					73.4641095	,
+					71.3786237	,
+					73.4592184	,
+					71.3771538	
+	
+			}, 
+			{
+					73.395419	,
+					71.3742365	,
+					73.3979364	,
+					71.3760512	,
+					73.3924699	,
+					71.3780725	,
+					73.390456	,
+					71.3765106	
+	
+			}, 
+			{
+					73.3496013	,
+					71.3727432	,
+					73.3521907	,
+					71.3743973	,
+					73.3602465	,
+					71.3736622	,
+					73.3573694	,
+					71.3721918	
+	
+			}, 
+			{
+					73.2595484	,
+					71.3803692	,
+					73.2664534	,
+					71.3790831	,
+					73.2710568	,
+					71.3794506	,
+					73.2693305	,
+					71.3822063	,
+					73.2719199	,
+					71.383033	,
+					73.2779618	,
+					71.3778888	,
+					73.274797	,
+					71.3765106	,
+					73.2773864	,
+					71.3751324	,
+					73.2746675	,
+					71.3735714	,
+					73.2693305	,
+					71.374673	,
+					73.2707691	,
+					71.376235	,
+					73.2655903	,
+					71.37697	
+
+			}, 
+			{
+					73.2207175	,
+					71.3787392	,
+					73.2250233	,
+					71.3807366	,
+					73.2322161	,
+					71.3809203	,
+					73.2460261	,
+					71.3802773	,
+					73.2491909	,
+					71.3771538	,
+					73.2408473	,
+					71.3771538	,
+					73.2304898	,
+					71.3773375	,
+					73.225536	,
+					71.3775456	
+
+			}, {
+					73.2189814	,
+					71.3887267	,
+					73.2201323	,
+					71.387533	,
+					73.2169675	,
+					71.3855127	,
+					73.2227217	,
+					71.3838596	,
+					73.2209954	,
+					71.3822063	,
+					73.2169675	,
+					71.3825737	,
+					73.2120764	,
+					71.3844106	,
+					73.2112133	,
+					71.386982	,
+					73.2143781	,
+					71.3888185	
+
+			}};
 	
 	// Набор переменных для отрисовки
 	public static int[] X;
@@ -4645,7 +4796,7 @@ private double[][] inners12 = new double[][] {
 		////////////////////////////////////////////////////
 		////////////////////////////////////////////////////
 		
-		coords = triangulation(outer26, inners26);
+		coords = triangulation(outer31, inners31);
 //		coords = triangulation(outer31, null);
 		
         ////////////////////////////////////////////////////
@@ -5068,7 +5219,7 @@ private double[][] inners12 = new double[][] {
 						VertexOffseter vOff = new VertexOffseter();
 						
 						// Смещаем координаты вершин в месте пересечения полигона так, чтобы небыло самопересечений
-						vOff.offset(tmp1, tmp2, outer_polygon, 0.0000001);
+						vOff.offset(tmp1, tmp2, outer_polygon, delta);
 					} else {
 						outer_polygon.setVertexValue(new Mj_Vertex(a.org));					
 						tmp1 = outer_polygon.getVertex();
@@ -5332,13 +5483,15 @@ private double[][] inners12 = new double[][] {
 			if(inners != null) {				
 				// Проверяем каждый внутренний полигон на четность и заполняем список внутренних полигонов
 				for(int i = 0; i < inners.length; i++) {
-					if(inners[i].length % 2 == 0)
+					if(inners[i].length % 2 == 0) {
+						// Избавляемся от лишних точек, лежащих на одной прямой и создаем список
 						inner_polys_list.append(makePolygon(inners[i])); 
+					}
 				}				
 				
 				// Избавляемся от внутренних полигонов
 				removeInnerPolygons(inner_polys_list);
-			} else {
+			} else {				
 				// Принимаем, что изначально обход от вершины к вершине полигона по часовой стрелке
 				boolean outer_CW = getBoolDirectionOfPolygonVertexes(outer_polygon); 
 				
@@ -5351,7 +5504,7 @@ private double[][] inners12 = new double[][] {
 		}
 		
 		// Декомпозиция полигона на монотонные части
-		monotone_polygons = decompositor.regularize(outer_polygon);
+//		monotone_polygons = decompositor.regularize(outer_polygon);
 		
 		// Вычисляем среднее значение параметра h
 //		middleH_fromEdge();
@@ -5359,8 +5512,8 @@ private double[][] inners12 = new double[][] {
 		useOuterVertexes = null;
 		inner_polys_list = null;
 		// Триангуляция монотонных полигонов
-		return getTriangleArray();
-//		return null;
+//		return getTriangleArray();
+		return null;
 	}
 	
 	/**
@@ -5595,11 +5748,22 @@ private double[][] inners12 = new double[][] {
 		inner_polys_list.first(); // Переходим на первый полигон в списке
 		
 		// Избавляемся от внутренних полигонов стороны которых лежат на сторонах внешнего полигона
-		for(int i = 0; i < size; i++) {						
+		for(int i = 0; i < size; i++) {	
+			// Проверяем наличие одной точки внутреннего полигоно лежащей на стороне
+			// внешнего полигона НЕ ДОДЕЛАНЫЙ КАРТА RU_YAN2
+/*			if (checkAndUnionInnerPoint(inner_polys_list.val())) {
+				size = inner_polys_list.length();
+				i = 0;
+				continue;
+			}*/
+			
 			// Проверяем наличие внутренних полигонов, сторона(ы) которого лежит на
 			// стороне(ах) внешнего полигона
 			if(checkAndUnionInnerSides(inner_polys_list.val())) {
 				inner_polys_list.remove();
+				size = inner_polys_list.length();
+				i = 0;
+				continue;
 			} 
 			
 			inner_polys_list.next();
@@ -5986,6 +6150,65 @@ private double[][] inners12 = new double[][] {
 	}
 	
 	/**
+	 * Проверяет принадлежность какой-либо точки внутреннего полигона стороне
+	 * внешнего полигона.
+	 * 
+	 * @param inner_polygon внутренний полигон
+	 * @return TRUE, если одна точка внутреннего полигона принадлежит
+	 *  стороне внешнего полигона, иначе - FALSE
+	 */
+	private boolean checkAndUnionInnerPoint(Mj_Polygon inner_polygon) {
+		// Признак наличия точки внутреннего полигона лежашей на стороне внешнего полигона
+		boolean isCheck = false; 
+		// Список точек, лежащих на сторонах внешнего полигона
+		ArrayList<Mj_Point> points = new ArrayList<>(0); 
+		
+		// Направление обхода вершин во внешнем полигоне
+		boolean outer_CW = getBoolDirectionOfPolygonVertexes(outer_polygon); 
+		// Направление обхода вершин во внутреннем полигоне
+		boolean inner_CW = getBoolDirectionOfPolygonVertexes(inner_polygon);
+		
+		// Если обход вершин полигона против часовой стрелки, то меняем его на обратный
+		if(!outer_CW) {
+			outer_polygon.changeCircumventPoints();
+			outer_CW = true; 
+		}
+							
+		// Если направления обхода вершин полигонов не совпадают, то меняем направление обхода
+		// у внутреннего полигона на противоположное
+		if(outer_CW != inner_CW) {
+			inner_polygon.changeCircumventPoints();
+			inner_CW = true;
+		}
+		
+		int outer_size = outer_polygon.size;
+				
+		for (int i = 0; i < inner_polygon.size; i++) {
+			for (int j = 0; j < outer_size; j++) {
+				// Берем точку вн полигона и провряем не лежит ли она на ребре
+				Point_position pos = inner_polygon.getVertex().point().classify(outer_polygon.edge());
+				
+				if (pos == Point_position.ORIGIN || pos == Point_position.DESTINATION) {
+					// Разрезает внешний полигон по двум точкам (наиближайшие точки внешнего и внутреннего
+					// полигонов), при этом создает их дубликаты. В итоге, внутренний полигон становится 
+					// частью внешнего.		
+					outer_polygon.getVertex().split_and_offset_triangle(inner_polygon.getVertex(), outer_polygon);
+					if (!points.contains(inner_polygon.getVertex().point()))
+						points.add(inner_polygon.getVertex().point());
+				} else if (pos == Point_position.BETWEEN) {
+					System.out.println("BETWEEN !!! Доделай меня !!!");
+//					points.add(new Mj_Point(inner_polygon.getVertex().point()));
+				}
+				
+				outer_polygon.advance();
+			}
+			inner_polygon.advance();
+		}
+		
+		return isCheck;
+	}
+	
+	/**
 	 * Проверяет принадлежность какой-либо стороны внутреннего полигона стороне(ам)
 	 * внешнего полигона.
 	 * 
@@ -6208,7 +6431,7 @@ private double[][] inners12 = new double[][] {
 		// частью внешнего.
 //		outer_polygon.getVertex().split_triangle(inner_polygon.getVertex(), outer_CW, outer_polygon);
 		
-		outer_polygon.getVertex().split_and_offset_triangle(inner_polygon.getVertex(), outer_CW, outer_polygon);
+		outer_polygon.getVertex().split_and_offset_triangle(inner_polygon.getVertex(), outer_polygon);
 		
 		// Изменяем размер полигона
 //		outer_polygon.resize();
@@ -6667,11 +6890,11 @@ class PaintPanel extends JPanel {
 		Graphics2D g2=(Graphics2D)g;
 		
 		// Изначальный полигон
-/*		g2.setColor(Color.BLACK);
+		g2.setColor(Color.BLACK);
 		g2.setStroke(new BasicStroke(1.0f));
 		g2.drawPolygon(Triangulation.X, Triangulation.Y, Triangulation.Y.length);
 		
-		g2.setStroke(new BasicStroke(1.0f));*/
+		g2.setStroke(new BasicStroke(1.0f));
 		
 		// Новые внешние полигоны
 		if(Triangulation.outerPolysAfterUnionInnersPolys.length() > 0) {
@@ -6711,7 +6934,7 @@ class PaintPanel extends JPanel {
 		
 		
 		// Получившиеся треугольники из массива массивов
-		for(int i = 0; i < Triangulation.coords.length; i++) {			
+/*		for(int i = 0; i < Triangulation.coords.length; i++) {			
 			g2.setColor(new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255), 200));
 			g2.setColor(new Color(225, 125, 125, 200));
 			
@@ -6728,14 +6951,14 @@ class PaintPanel extends JPanel {
 		g2.drawString("Triangles (list): " + Triangulation.arrayTrianglesPoints.size(), 10, 90);
 		g2.drawString("Triangles (array): " + Triangulation.coords.length, 10, 120);
 		g2.drawString("H = " + Triangulation.h, 10, 150);
-		g2.drawString("New polygons: " + Triangulation.outerPolysAfterUnionInnersPolys.length(), 10, 180);
+		g2.drawString("New polygons: " + Triangulation.outerPolysAfterUnionInnersPolys.length(), 10, 180);*/
 		
 		// Все точки
-/*		g2.setColor(Color.RED);
+		g2.setColor(Color.RED);
 		g2.setStroke(new BasicStroke(4.0f));
 		
 		for(int i = 0; i < Triangulation.X.length; i++)
-			g2.drawLine(Triangulation.X[i], Triangulation.Y[i], Triangulation.X[i], Triangulation.Y[i]);*/
+			g2.drawLine(Triangulation.X[i], Triangulation.Y[i], Triangulation.X[i], Triangulation.Y[i]);
 	}
 	
 	private int[] getCoordsArrayX(double[] p) {

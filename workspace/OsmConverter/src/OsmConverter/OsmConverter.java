@@ -42,10 +42,10 @@ public class OsmConverter {
 //	private final static String path = "columbia.osm";
 //	private final static String path = "nebug.osm";
 //	private final static String path = "newyork.osm";
-//	private final static String path = "RU-YAN.osm";
+	private final static String path = "RU-YAN.osm";
 //	private final static String path = "RU-KGD.osm";
 //	private final static String path = "rim.osm";
-	private final static String path = "braniewo.osm";
+//	private final static String path = "braniewo.osm";
 //	private final static String path = "map.osm";
 	
 	public static StringBuilder log_str = new StringBuilder(); // Текст для файла Log.txt

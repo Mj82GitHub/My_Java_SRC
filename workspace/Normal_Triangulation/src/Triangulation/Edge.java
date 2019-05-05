@@ -24,7 +24,8 @@ public class Edge {
 		             PARALLEL,        // Параллельны
 		             SKEW,            // Наклонены
 		             SKEW_CROSS,      // Наклонены и пересекаются
-		             SKEW_NO_CROSS }; // Наклонены, но без пересечения
+		             SKEW_NO_CROSS,   // Наклонены, но без пересечения
+		             BETWEEN };       // 
 	
 	public Edge() {
 		org = new Mj_Point(0, 0);
