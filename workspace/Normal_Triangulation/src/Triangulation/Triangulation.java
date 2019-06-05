@@ -4796,7 +4796,7 @@ private double[][] inners12 = new double[][] {
 		////////////////////////////////////////////////////
 		////////////////////////////////////////////////////
 		
-		coords = triangulation(outer31, inners31);
+		coords = triangulation(outer26, inners26);
 //		coords = triangulation(outer31, null);
 		
         ////////////////////////////////////////////////////
@@ -5504,7 +5504,7 @@ private double[][] inners12 = new double[][] {
 		}
 		
 		// Декомпозиция полигона на монотонные части
-//		monotone_polygons = decompositor.regularize(outer_polygon);
+		monotone_polygons = decompositor.regularize(outer_polygon);
 		
 		// Вычисляем среднее значение параметра h
 //		middleH_fromEdge();
@@ -5512,8 +5512,8 @@ private double[][] inners12 = new double[][] {
 		useOuterVertexes = null;
 		inner_polys_list = null;
 		// Триангуляция монотонных полигонов
-//		return getTriangleArray();
-		return null;
+		return getTriangleArray();
+//		return null;
 	}
 	
 	/**
@@ -6889,12 +6889,12 @@ class PaintPanel extends JPanel {
 		super.paintComponent(g);		
 		Graphics2D g2=(Graphics2D)g;
 		
-		// Изначальный полигон
+/*		// Изначальный полигон
 		g2.setColor(Color.BLACK);
 		g2.setStroke(new BasicStroke(1.0f));
 		g2.drawPolygon(Triangulation.X, Triangulation.Y, Triangulation.Y.length);
 		
-		g2.setStroke(new BasicStroke(1.0f));
+		g2.setStroke(new BasicStroke(1.0f));*/
 		
 		// Новые внешние полигоны
 		if(Triangulation.outerPolysAfterUnionInnersPolys.length() > 0) {
@@ -6934,9 +6934,9 @@ class PaintPanel extends JPanel {
 		
 		
 		// Получившиеся треугольники из массива массивов
-/*		for(int i = 0; i < Triangulation.coords.length; i++) {			
+		for(int i = 0; i < Triangulation.coords.length; i++) {			
 			g2.setColor(new Color(rand.nextInt(255), rand.nextInt(255), rand.nextInt(255), 200));
-			g2.setColor(new Color(225, 125, 125, 200));
+//			g2.setColor(new Color(225, 125, 125, 200));
 			
 			int[] x = getCoordsArrayX(Triangulation.coords[i]);
 			int[] y = getCoordsArrayY(Triangulation.coords[i]);
@@ -6951,14 +6951,14 @@ class PaintPanel extends JPanel {
 		g2.drawString("Triangles (list): " + Triangulation.arrayTrianglesPoints.size(), 10, 90);
 		g2.drawString("Triangles (array): " + Triangulation.coords.length, 10, 120);
 		g2.drawString("H = " + Triangulation.h, 10, 150);
-		g2.drawString("New polygons: " + Triangulation.outerPolysAfterUnionInnersPolys.length(), 10, 180);*/
+		g2.drawString("New polygons: " + Triangulation.outerPolysAfterUnionInnersPolys.length(), 10, 180);
 		
 		// Все точки
-		g2.setColor(Color.RED);
+/*		g2.setColor(Color.RED);
 		g2.setStroke(new BasicStroke(4.0f));
 		
 		for(int i = 0; i < Triangulation.X.length; i++)
-			g2.drawLine(Triangulation.X[i], Triangulation.Y[i], Triangulation.X[i], Triangulation.Y[i]);
+			g2.drawLine(Triangulation.X[i], Triangulation.Y[i], Triangulation.X[i], Triangulation.Y[i]);*/
 	}
 	
 	private int[] getCoordsArrayX(double[] p) {
